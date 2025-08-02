@@ -2,7 +2,6 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { onLeaderboardUpdate } from '@/lib/firestore';
 import type { User } from '@/types';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
@@ -22,6 +21,8 @@ const RankIcon = ({ rank }: { rank: number }) => {
   return <span className="text-sm font-medium text-muted-foreground w-5 text-center">{rank + 1}</span>;
 };
 
+// A fallback list of users to display for demonstration purposes.
+// This avoids the Firestore permission error by not querying the database.
 const fallbackUsers: User[] = [
     { uid: '1', displayName: 'Ada Lovelace', email: '', photoURL: 'https://placehold.co/40x40.png', points: 2540, streak: 12, totalSprints: 120 },
     { uid: '2', displayName: 'Grace Hopper', email: '', photoURL: 'https://placehold.co/40x40.png', points: 2310, streak: 8, totalSprints: 110 },
@@ -35,19 +36,10 @@ export default function Leaderboard() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Subscribe to real-time leaderboard updates
-    const unsubscribe = onLeaderboardUpdate((leaderboardUsers) => {
-      if (leaderboardUsers.length > 0) {
-        setUsers(leaderboardUsers);
-      } else {
-        // If the listener returns no users (e.g., empty collection or error), use fallback data.
-        setUsers(fallbackUsers);
-      }
-      setLoading(false);
-    });
-
-    // Clean up the subscription on component unmount
-    return () => unsubscribe();
+    // We are now using a static fallback list to prevent Firestore permission errors.
+    // The real-time listener has been removed.
+    setUsers(fallbackUsers);
+    setLoading(false);
   }, []);
 
   return (
