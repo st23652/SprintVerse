@@ -47,6 +47,7 @@ const handleAuthError = (error: any) => {
 
 export const signInWithGoogle = async () => {
   try {
+    console.log(`Attempting sign-in with authDomain: ${auth.config.authDomain}`);
     const googleProvider = new GoogleAuthProvider();
     const result = await signInWithPopup(auth, googleProvider);
     return await handleAuthSuccess(result.user);
@@ -107,7 +108,11 @@ export const sendPhoneVerification = async (phoneNumber: string) => {
         const verificationId = await signInWithPhoneNumber(auth, phoneNumber, appVerifier);
         return verificationId;
     } catch(error) {
-        return handleAuthError(error);
+        // We will not log the billing error as the feature is now removed from UI.
+        if (error.code !== 'auth/billing-not-enabled') {
+            return handleAuthError(error);
+        }
+        return null;
     }
 }
 

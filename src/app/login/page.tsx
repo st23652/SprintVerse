@@ -4,9 +4,8 @@ import { useAuth } from '@/hooks/use-auth';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { signInWithGoogle, signInWithGitHub, signInWithEmail, sendPhoneVerification, verifyPhoneCode } from '@/lib/firebase';
+import { signInWithGoogle, signInWithGitHub, signInWithEmail } from '@/lib/firebase';
 import { Rocket } from 'lucide-react';
-import Image from 'next/image';
 import Link from 'next/link';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -52,9 +51,6 @@ export default function LoginPage() {
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [phone, setPhone] = useState('');
-  const [code, setCode] = useState('');
-  const [verificationId, setVerificationId] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
 
@@ -70,28 +66,6 @@ export default function LoginPage() {
     const success = await signInWithEmail(email, password);
     if (!success) {
       toast({ variant: 'destructive', title: 'Login Failed', description: 'Please check your email and password.' });
-    }
-    setIsSubmitting(false);
-  }
-  
-  const handleSendCode = async () => {
-    setIsSubmitting(true);
-    const verifId = await sendPhoneVerification(phone);
-    if (verifId) {
-        setVerificationId(verifId);
-        toast({ title: 'Code Sent', description: 'Check your phone for the verification code.'});
-    } else {
-        toast({ variant: 'destructive', title: 'Failed to send code', description: 'Please check the phone number.'});
-    }
-    setIsSubmitting(false);
-  }
-
-  const handleVerifyCode = async () => {
-    if (!verificationId) return;
-    setIsSubmitting(true);
-    const success = await verifyPhoneCode(verificationId, code);
-    if (!success) {
-        toast({ variant: 'destructive', title: 'Login Failed', description: 'Invalid verification code.'});
     }
     setIsSubmitting(false);
   }
@@ -123,52 +97,21 @@ export default function LoginPage() {
             
             <div className="my-4 flex items-center">
                 <Separator className="flex-1" />
-                <span className="mx-4 text-xs text-muted-foreground">OR</span>
+                <span className="mx-4 text-xs text-muted-foreground">OR SIGN IN WITH EMAIL</span>
                 <Separator className="flex-1" />
             </div>
 
-            {verificationId ? (
-                <div className="space-y-4">
-                    <div className="space-y-2">
-                        <Label htmlFor="code">Verification Code</Label>
-                        <Input id="code" type="text" placeholder="123456" value={code} onChange={e => setCode(e.target.value)} required />
-                    </div>
-                    <Button onClick={handleVerifyCode} className="w-full" disabled={isSubmitting}>
-                        {isSubmitting ? 'Verifying...' : 'Sign In with Phone'}
-                    </Button>
+            <form onSubmit={handleEmailLogin} className="space-y-4">
+                <div className="space-y-2">
+                <Label htmlFor="email">Email</Label>
+                <Input id="email" type="email" placeholder="m@example.com" value={email} onChange={e => setEmail(e.target.value)} required />
                 </div>
-            ) : (
-                <>
-                <form onSubmit={handleEmailLogin} className="space-y-4">
-                    <div className="space-y-2">
-                    <Label htmlFor="email">Email</Label>
-                    <Input id="email" type="email" placeholder="m@example.com" value={email} onChange={e => setEmail(e.target.value)} required />
-                    </div>
-                    <div className="space-y-2">
-                    <Label htmlFor="password">Password</Label>
-                    <Input id="password" type="password" value={password} onChange={e => setPassword(e.target.value)} required />
-                    </div>
-                    <Button type="submit" className="w-full" disabled={isSubmitting}>{isSubmitting ? 'Signing In...' : 'Sign In with Email'}</Button>
-                </form>
-
-                <div className="my-4 flex items-center">
-                    <Separator className="flex-1" />
-                    <span className="mx-4 text-xs text-muted-foreground">OR</span>
-                    <Separator className="flex-1" />
+                <div className="space-y-2">
+                <Label htmlFor="password">Password</Label>
+                <Input id="password" type="password" value={password} onChange={e => setPassword(e.target.value)} required />
                 </div>
-
-                <div className="space-y-4">
-                    <div className="space-y-2">
-                        <Label htmlFor="phone">Phone Number</Label>
-                        <Input id="phone" type="tel" placeholder="+1 123 456 7890" value={phone} onChange={e => setPhone(e.target.value)} required />
-                    </div>
-                    <div id="recaptcha-container"></div>
-                    <Button onClick={handleSendCode} className="w-full" variant="secondary" disabled={isSubmitting}>
-                        {isSubmitting ? 'Sending Code...' : 'Send Verification Code'}
-                    </Button>
-                </div>
-                </>
-            )}
+                <Button type="submit" className="w-full" disabled={isSubmitting}>{isSubmitting ? 'Signing In...' : 'Sign In with Email'}</Button>
+            </form>
 
             <p className="mt-6 text-center text-sm text-muted-foreground">
                 Don't have an account?{' '}
