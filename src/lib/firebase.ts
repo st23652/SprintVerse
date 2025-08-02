@@ -42,12 +42,12 @@ const handleAuthError = (error: any) => {
     if (error.code !== 'auth/cancelled-popup-request' && error.code !== 'auth/popup-closed-by-user') {
         console.error("Authentication Error: ", error);
     }
-    return null;
+    // Re-throw the error so the UI layer can handle it
+    throw error;
 }
 
 export const signInWithGoogle = async () => {
   try {
-    console.log(`Attempting sign-in with authDomain: ${auth.config.authDomain}`);
     const googleProvider = new GoogleAuthProvider();
     const result = await signInWithPopup(auth, googleProvider);
     return await handleAuthSuccess(result.user);

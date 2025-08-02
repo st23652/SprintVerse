@@ -64,12 +64,31 @@ export default function RegisterPage() {
   const handleEmailRegister = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
-    const success = await registerWithEmail(email, password, displayName);
-    if (!success) {
-      toast({ variant: 'destructive', title: 'Registration Failed', description: 'This email might already be in use.' });
+    try {
+      const success = await registerWithEmail(email, password, displayName);
+      if (!success) {
+        // This case is unlikely if we catch the specific error, but good to have.
+        toast({ variant: 'destructive', title: 'Registration Failed', description: 'An unexpected error occurred.' });
+      }
+    } catch (error: any) {
+      if (error.code === 'auth/email-already-in-use') {
+        toast({
+          variant: 'destructive',
+          title: 'Email Already Registered',
+          description: 'This email is already in use. Please log in instead.',
+        });
+      } else {
+        toast({
+          variant: 'destructive',
+          title: 'Registration Failed',
+          description: error.message || 'Please try again.',
+        });
+      }
+    } finally {
+      setIsSubmitting(false);
     }
-    setIsSubmitting(false);
-  }
+  };
+
 
   if (loading || user) {
     return (
