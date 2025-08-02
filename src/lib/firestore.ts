@@ -1,4 +1,5 @@
-import { doc, setDoc, getDoc, serverTimestamp, collection, addDoc, getDocs, query, orderBy, limit, updateDoc, arrayUnion, increment, onSnapshot, Unsubscribe } from 'firebase/firestore';
+
+import { doc, setDoc, getDoc, serverTimestamp, collection, addDoc, getDocs, query, orderBy, limit, updateDoc, arrayUnion, increment, onSnapshot, Unsubscribe, where } from 'firebase/firestore';
 import { db } from './firebase';
 import type { User as FirebaseUser } from 'firebase/auth';
 import type { Session, User } from '@/types';
@@ -53,6 +54,13 @@ export const joinSession = async (sessionId: string, user: User): Promise<boolea
       return false;
     }
 
+    const sessionData = sessionSnap.data() as Session;
+    const participantUids = sessionData.participants.map(p => p.uid);
+
+    if (participantUids.includes(user.uid)) {
+      return true;
+    }
+
     const newParticipant = {
       uid: user.uid,
       displayName: user.displayName,
@@ -82,11 +90,40 @@ export const onLeaderboardUpdate = (callback: (users: User[]) => void): Unsubscr
         callback(users);
     }, (error) => {
         console.error("Error listening to leaderboard updates: ", error);
-        // In case of error, we can pass an empty array or handle it as needed.
         callback([]);
     });
 
     return unsubscribe;
+}
+
+export const getSessionHistory = async (userId: string): Promise<Session[]> => {
+    try {
+        const sessionsRef = collection(db, 'sessions');
+        const q = query(
+            sessionsRef,
+            where('participants', 'array-contains-any', [{uid: userId}]),
+            orderBy('createdAt', 'desc'),
+            limit(20)
+        );
+        const querySnapshot = await getDocs(q);
+        return querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Session));
+    } catch (error) {
+        if ((error as any).code === 'failed-precondition') {
+             console.error(`
+                FIRESTORE ERROR: The required composite index is missing for this query.
+                
+                To fix this, please go to the Firebase Console:
+                1. Find the error message in your browser's developer console.
+                2. It should contain a link to create the necessary index. Click it.
+                3. The console will pre-fill the index details. Just click "Create Index".
+                
+                The index creation will take a few minutes. Once it's ready, this query will work.
+            `);
+        } else {
+            console.error("Error getting session history: ", error);
+        }
+        return [];
+    }
 }
 
 
@@ -111,8 +148,6 @@ export const completeSprint = async (userId: string, sessionId: string, points: 
             totalSprints: increment(1),
             streak: increment(1)
         });
-        
-        // Note: Updating participant status within the session document is handled on the session page for simplicity.
         
         return true;
     } catch (error) {

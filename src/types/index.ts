@@ -1,3 +1,4 @@
+
 import type { Timestamp } from 'firebase/firestore';
 
 export interface User {
@@ -16,6 +17,7 @@ export interface Session {
   creatorUid: string;
   status: 'waiting' | 'in-progress' | 'completed';
   createdAt: Timestamp;
+  participants: Participant[];
 }
 
 export interface Participant {
