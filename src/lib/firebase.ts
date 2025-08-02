@@ -59,7 +59,7 @@ const handleAuthError = (error: any) => {
         2. Go to the 'Authentication' section.
         3. Click on the 'Settings' tab.
         4. Under 'Authorized domains', click 'Add domain'.
-        5. Add 'localhost' and click 'Add'.
+        5. Add 'localhost' and the domain from the error message.
         
         Your app is running from a domain that is not on this list.
         The current authDomain is configured as: ${auth.config.authDomain}
@@ -67,13 +67,17 @@ const handleAuthError = (error: any) => {
     } else if (error.code !== 'auth/billing-not-enabled' && error.code !== 'auth/cancelled-popup-request' && error.code !== 'auth/popup-closed-by-user') {
         console.error("Authentication Error: ", error);
     }
-    // Re-throw the error so the UI layer can handle it
-    throw error;
+    // Don't re-throw for common "user closed popup" errors
+    if (error.code !== 'auth/cancelled-popup-request' && error.code !== 'auth/popup-closed-by-user') {
+        throw error;
+    }
+    return null;
 }
 
 export const signInWithGoogle = async () => {
   try {
     const googleProvider = new GoogleAuthProvider();
+    auth.tenantId = firebaseConfig.authDomain;
     const result = await signInWithPopup(auth, googleProvider);
     return await handleAuthSuccess(result.user);
   } catch (error) {
@@ -84,6 +88,7 @@ export const signInWithGoogle = async () => {
 export const signInWithGitHub = async () => {
   try {
     const githubProvider = new GithubAuthProvider();
+    auth.tenantId = firebaseConfig.authDomain;
     const result = await signInWithPopup(auth, githubProvider);
     return await handleAuthSuccess(result.user);
   } catch (error) {
