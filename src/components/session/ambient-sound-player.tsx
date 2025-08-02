@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
@@ -19,42 +20,57 @@ export default function AmbientSoundPlayer() {
   const [isMuted, setIsMuted] = useState(false);
   const player = useRef<Tone.Player | null>(null);
 
+  // Cleanup effect to stop and dispose of the player on unmount
   useEffect(() => {
-    player.current = new Tone.Player({
-        url: "",
-        loop: true,
-        autostart: false,
-    }).toDestination();
-    
     return () => {
+        player.current?.stop();
         player.current?.dispose();
     }
   }, []);
-
+  
   const toggleSound = async (sound: Sound) => {
-    await Tone.start();
+    await Tone.start(); 
+
+    // If the same sound is clicked again, stop it.
     if (activeSound === sound) {
       player.current?.stop();
+      player.current?.dispose();
+      player.current = null;
       setActiveSound(null);
-    } else {
-      player.current?.stop();
-      if(player.current) {
-        const selectedSound = soundOptions.find(s => s.id === sound);
-        if(selectedSound) {
-            player.current.load(selectedSound.url).then(() => {
-                player.current?.start();
-            });
-        }
+      return;
+    }
+
+    // If a different sound is playing, stop and dispose of it first.
+    if(player.current) {
+        player.current.stop();
+        player.current.dispose();
+    }
+    
+    const selectedSound = soundOptions.find(s => s.id === sound);
+    if (selectedSound) {
+      // Create a new player, load the sound, and start it.
+      player.current = new Tone.Player({
+        url: selectedSound.url,
+        loop: true,
+        autostart: true, // Autostart after loading
+        mute: isMuted,
+      }).toDestination();
+      
+      // Handle potential loading errors
+      player.current.onstop = () => {
+        player.current?.dispose();
       }
+      
       setActiveSound(sound);
     }
   };
   
   const toggleMute = () => {
+    const newMutedState = !isMuted;
     if(player.current) {
-        player.current.mute = !player.current.mute;
-        setIsMuted(player.current.mute);
+        player.current.mute = newMutedState;
     }
+    setIsMuted(newMutedState);
   }
 
   return (
