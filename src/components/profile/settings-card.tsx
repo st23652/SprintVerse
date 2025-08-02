@@ -1,12 +1,28 @@
 
 'use client';
 
+import { useState, useEffect } from 'react';
+import { useTheme } from 'next-themes';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { Settings } from 'lucide-react';
 
 export default function SettingsCard() {
+  const { theme, setTheme } = useTheme();
+  const [emailNotifications, setEmailNotifications] = useState(false);
+  const [isDarkMode, setIsDarkMode] = useState(false);
+  
+  // Ensure the switch reflects the current theme on mount
+  useEffect(() => {
+    setIsDarkMode(theme === 'dark');
+  }, [theme]);
+
+  const handleDarkModeToggle = (checked: boolean) => {
+    setTheme(checked ? 'dark' : 'light');
+    setIsDarkMode(checked);
+  };
+
   return (
     <Card className="shadow-lg">
       <CardHeader>
@@ -21,7 +37,7 @@ export default function SettingsCard() {
               Receive emails about new session invites and weekly summaries.
             </span>
           </Label>
-          <Switch id="notifications" disabled />
+          <Switch id="notifications" checked={emailNotifications} onCheckedChange={setEmailNotifications} disabled />
         </div>
         <div className="flex items-center justify-between space-x-2 rounded-lg border p-4">
            <Label htmlFor="dark-mode" className="flex flex-col space-y-1">
@@ -30,7 +46,7 @@ export default function SettingsCard() {
               Toggle the application's theme.
             </span>
           </Label>
-          <Switch id="dark-mode" disabled />
+          <Switch id="dark-mode" checked={isDarkMode} onCheckedChange={handleDarkModeToggle} />
         </div>
       </CardContent>
     </Card>
