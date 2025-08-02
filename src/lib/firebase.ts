@@ -1,5 +1,5 @@
 
-import { initializeApp, getApps, getApp } from 'firebase/app';
+import { initializeApp, getApps, getApp, FirebaseApp } from 'firebase/app';
 import { 
     getAuth, 
     GoogleAuthProvider, 
@@ -9,8 +9,9 @@ import {
     createUserWithEmailAndPassword,
     signInWithEmailAndPassword,
     updateProfile,
+    Auth
 } from 'firebase/auth';
-import { getFirestore, initializeFirestore, memoryLocalCache } from 'firebase/firestore';
+import { getFirestore, initializeFirestore, memoryLocalCache, Firestore } from 'firebase/firestore';
 import { createUserProfileIfNotExists } from './firestore';
 
 const firebaseConfig = {
@@ -24,12 +25,23 @@ const firebaseConfig = {
     appId: "1:985612924718:web:a3e523984481360296acbf"
 };
 
-// Initialize Firebase
-const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
-const auth = getAuth(app);
-const db = initializeFirestore(app, {
-    localCache: memoryLocalCache()
-});
+// Initialize Firebase for Singleton Pattern
+let app: FirebaseApp;
+let auth: Auth;
+let db: Firestore;
+
+if (getApps().length === 0) {
+    app = initializeApp(firebaseConfig);
+    auth = getAuth(app);
+    db = initializeFirestore(app, {
+        localCache: memoryLocalCache()
+    });
+} else {
+    app = getApp();
+    auth = getAuth(app);
+    db = getFirestore(app);
+}
+
 
 const handleAuthSuccess = async (user: any) => {
     if (user) {
