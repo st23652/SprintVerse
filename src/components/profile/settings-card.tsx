@@ -37,7 +37,7 @@ export default function SettingsCard() {
               Receive emails about new session invites and weekly summaries.
             </span>
           </Label>
-          <Switch id="notifications" checked={emailNotifications} onCheckedChange={setEmailNotifications} disabled />
+          <Switch id="notifications" checked={emailNotifications} onCheckedChange={setEmailNotifications} />
         </div>
         <div className="flex items-center justify-between space-x-2 rounded-lg border p-4">
            <Label htmlFor="dark-mode" className="flex flex-col space-y-1">
