@@ -36,7 +36,7 @@ export const createSession = async (title: string, creator: User): Promise<strin
         progress: 0,
         status: 'waiting',
       }],
-      participantUids: [creator.uid], // Add this line
+      participantUids: [creator.uid],
     };
     const sessionRef = await addDoc(collection(db, 'sessions'), sessionData);
     return sessionRef.id;
@@ -72,7 +72,7 @@ export const joinSession = async (sessionId: string, user: User): Promise<boolea
 
     await updateDoc(sessionRef, {
       participants: arrayUnion(newParticipant),
-      participantUids: arrayUnion(user.uid) // Add this line
+      participantUids: arrayUnion(user.uid)
     });
     
     return true;
@@ -101,26 +101,19 @@ export const onLeaderboardUpdate = (callback: (users: User[]) => void): Unsubscr
 export const getSessionHistory = async (userId: string): Promise<Session[]> => {
     try {
         const sessionsRef = collection(db, 'sessions');
-        // This query is simpler and does not require a composite index.
+        // This query now avoids the composite index error by not ordering on the backend.
         const q = query(
             sessionsRef,
             where('participantUids', 'array-contains', userId),
-            orderBy('createdAt', 'desc'),
-            limit(20)
+            limit(50) // Fetch a larger number to sort on the client
         );
         const querySnapshot = await getDocs(q);
         return querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Session));
     } catch (error) {
+        // The failed-precondition error should no longer happen, but keeping the catch block is good practice.
         if ((error as any).code === 'failed-precondition') {
              console.error(`
-                FIRESTORE ERROR: The required composite index is missing for this query.
-                
-                To fix this, please go to the Firebase Console:
-                1. Find the error message in your browser's developer console.
-                2. It should contain a link to create the necessary index. Click it.
-                3. The console will pre-fill the index details. Just click "Create Index".
-                
-                The index creation will take a few minutes. Once it's ready, this query will work.
+                FIRESTORE ERROR: A composite index is required for this query. This should not happen with the current code.
             `);
         } else {
             console.error("Error getting session history: ", error);

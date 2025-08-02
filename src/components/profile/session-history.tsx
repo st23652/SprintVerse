@@ -22,7 +22,13 @@ export default function SessionHistory({ userId }: SessionHistoryProps) {
     const fetchHistory = async () => {
       setLoading(true);
       const sessionHistory = await getSessionHistory(userId);
-      setSessions(sessionHistory);
+      // Sort the sessions on the client-side after fetching
+      const sortedHistory = sessionHistory.sort((a, b) => {
+        const dateA = a.createdAt?.toDate()?.getTime() || 0;
+        const dateB = b.createdAt?.toDate()?.getTime() || 0;
+        return dateB - dateA; // Sort descending (newest first)
+      });
+      setSessions(sortedHistory.slice(0, 20)); // Limit to the most recent 20
       setLoading(false);
     };
     fetchHistory();
