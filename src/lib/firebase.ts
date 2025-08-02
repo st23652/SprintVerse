@@ -64,7 +64,6 @@ const handleAuthError = (error: any) => {
 export const signInWithGoogle = async () => {
   try {
     const googleProvider = new GoogleAuthProvider();
-    auth.tenantId = firebaseConfig.authDomain;
     const result = await signInWithPopup(auth, googleProvider);
     return await handleAuthSuccess(result.user);
   } catch (error) {
@@ -75,7 +74,6 @@ export const signInWithGoogle = async () => {
 export const signInWithGitHub = async () => {
   try {
     const githubProvider = new GithubAuthProvider();
-    auth.tenantId = firebaseConfig.authDomain;
     const result = await signInWithPopup(auth, githubProvider);
     return await handleAuthSuccess(result.user);
   } catch (error) {
