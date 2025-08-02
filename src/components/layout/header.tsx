@@ -2,7 +2,7 @@
 'use client';
 
 import Link from 'next/link';
-import { Rocket, LogOut, User as UserIcon } from 'lucide-react';
+import { Rocket, LogOut, User as UserIcon, LayoutDashboard } from 'lucide-react';
 import { useAuth } from '@/hooks/use-auth';
 import { signOutUser } from '@/lib/firebase';
 import {
@@ -55,6 +55,12 @@ export default function Header() {
                 </div>
               </DropdownMenuLabel>
               <DropdownMenuSeparator />
+              <DropdownMenuItem asChild>
+                <Link href="/dashboard">
+                  <LayoutDashboard className="mr-2 h-4 w-4" />
+                  <span>Dashboard</span>
+                </Link>
+              </DropdownMenuItem>
               <DropdownMenuItem asChild>
                 <Link href="/profile">
                   <UserIcon className="mr-2 h-4 w-4" />
