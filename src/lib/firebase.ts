@@ -54,8 +54,9 @@ const handleAuthError = (error: any) => {
     } else if (error.code !== 'auth/billing-not-enabled' && error.code !== 'auth/cancelled-popup-request' && error.code !== 'auth/popup-closed-by-user') {
         console.error("Authentication Error: ", error);
     }
-    // Don't re-throw for common "user closed popup" errors
-    if (error.code !== 'auth/cancelled-popup-request' && error.code !== 'auth/popup-closed-by-user') {
+
+    // Don't re-throw for common "user closed popup" or domain authorization errors
+    if (error.code !== 'auth/cancelled-popup-request' && error.code !== 'auth/popup-closed-by-user' && error.code !== 'auth/unauthorized-domain') {
         throw error;
     }
     return null;
