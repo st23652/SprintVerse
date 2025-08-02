@@ -4,12 +4,12 @@ import { getFirestore } from 'firebase/firestore';
 import { createUserProfileIfNotExists } from './firestore';
 
 const firebaseConfig = {
-  apiKey: "AIzaSyCWqkzo5_Xanzh-fNQ5gBzUtY6eNY0n2bA",
-  authDomain: "sprintverse.firebaseapp.com",
-  projectId: "sprintverse",
-  storageBucket: "sprintverse.firebasestorage.app",
-  messagingSenderId: "985612924718",
-  appId: "1:985612924718:web:a3e523984481360296acbf"
+  apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
+  authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN,
+  projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
+  storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID,
+  appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID
 };
 
 // Initialize Firebase
