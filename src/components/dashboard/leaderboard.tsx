@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useEffect, useState } from 'react';
@@ -28,20 +29,32 @@ export default function Leaderboard() {
   useEffect(() => {
     const fetchLeaderboard = async () => {
       setLoading(true);
-      const leaderboardUsers = await getLeaderboard();
-      // MOCK DATA for display purposes if firestore is not connected
-      if (leaderboardUsers.length === 0) {
-        setUsers([
-          { uid: '1', displayName: 'Ada Lovelace', email: '', photoURL: 'https://placehold.co/40x40.png', points: 2540, streak: 12, totalSprints: 120 },
-          { uid: '2', displayName: 'Grace Hopper', email: '', photoURL: 'https://placehold.co/40x40.png', points: 2310, streak: 8, totalSprints: 110 },
-          { uid: '3', displayName: 'Alan Turing', email: '', photoURL: 'https://placehold.co/40x40.png', points: 2100, streak: 15, totalSprints: 100 },
-          { uid: '4', displayName: 'Linus Torvalds', email: '', photoURL: 'https://placehold.co/40x40.png', points: 1980, streak: 5, totalSprints: 95 },
-          { uid: '5', displayName: 'Margaret Hamilton', email: '', photoURL: 'https://placehold.co/40x40.png', points: 1850, streak: 9, totalSprints: 90 },
-        ]);
-      } else {
-        setUsers(leaderboardUsers);
+      try {
+        const leaderboardUsers = await getLeaderboard();
+        // MOCK DATA for display purposes if firestore is not connected
+        if (leaderboardUsers.length === 0) {
+            setUsers([
+              { uid: '1', displayName: 'Ada Lovelace', email: '', photoURL: 'https://placehold.co/40x40.png', points: 2540, streak: 12, totalSprints: 120 },
+              { uid: '2', displayName: 'Grace Hopper', email: '', photoURL: 'https://placehold.co/40x40.png', points: 2310, streak: 8, totalSprints: 110 },
+              { uid: '3', displayName: 'Alan Turing', email: '', photoURL: 'https://placehold.co/40x40.png', points: 2100, streak: 15, totalSprints: 100 },
+              { uid: '4', displayName: 'Linus Torvalds', email: '', photoURL: 'https://placehold.co/40x40.png', points: 1980, streak: 5, totalSprints: 95 },
+              { uid: '5', displayName: 'Margaret Hamilton', email: '', photoURL: 'https://placehold.co/40x40.png', points: 1850, streak: 9, totalSprints: 90 },
+            ]);
+        } else {
+            setUsers(leaderboardUsers);
+        }
+      } catch (error) {
+          console.error("Failed to fetch leaderboard, using fallback data.", error);
+          setUsers([
+              { uid: '1', displayName: 'Ada Lovelace', email: '', photoURL: 'https://placehold.co/40x40.png', points: 2540, streak: 12, totalSprints: 120 },
+              { uid: '2', displayName: 'Grace Hopper', email: '', photoURL: 'https://placehold.co/40x40.png', points: 2310, streak: 8, totalSprints: 110 },
+              { uid: '3', displayName: 'Alan Turing', email: '', photoURL: 'https://placehold.co/40x40.png', points: 2100, streak: 15, totalSprints: 100 },
+              { uid: '4', displayName: 'Linus Torvalds', email: '', photoURL: 'https://placehold.co/40x40.png', points: 1980, streak: 5, totalSprints: 95 },
+              { uid: '5', displayName: 'Margaret Hamilton', email: '', photoURL: 'https://placehold.co/40x40.png', points: 1850, streak: 9, totalSprints: 90 },
+            ]);
+      } finally {
+        setLoading(false);
       }
-      setLoading(false);
     };
     fetchLeaderboard();
   }, []);
