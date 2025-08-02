@@ -4,12 +4,12 @@ import { getFirestore } from 'firebase/firestore';
 import { createUserProfileIfNotExists } from './firestore';
 
 const firebaseConfig = {
-  apiKey: "AIzaSyCWqkzo5_Xanzh-fNQ5gBzUtY6eNY0n2bA",
-  authDomain: "sprintverse.firebaseapp.com",
-  projectId: "sprintverse",
-  storageBucket: "sprintverse.firebasestorage.app",
-  messagingSenderId: "985612924718",
-  appId: "1:985612924718:web:a3e523984481360296acbf"
+    apiKey: "AIzaSyCWqkzo5_Xanzh-fNQ5gBzUtY6eNY0n2bA",
+    authDomain: "sprintverse.firebaseapp.com",
+    projectId: "sprintverse",
+    storageBucket: "sprintverse.firebasestorage.app",
+    messagingSenderId: "985612924718",
+    appId: "1:985612924718:web:a3e523984481360296acbf"
 };
 
 // Initialize Firebase
@@ -21,13 +21,18 @@ const googleProvider = new GoogleAuthProvider();
 export const signInWithGoogle = async () => {
   try {
     const result = await signInWithPopup(auth, googleProvider);
+    if (!result) {
+      return null;
+    }
     const user = result.user;
     if (user) {
       await createUserProfileIfNotExists(user);
     }
     return user;
-  } catch (error) {
-    console.error("Error signing in with Google: ", error);
+  } catch (error: any) {
+    if (error.code !== 'auth/cancelled-popup-request') {
+      console.error("Error signing in with Google: ", error);
+    }
     return null;
   }
 };
