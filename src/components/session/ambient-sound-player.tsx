@@ -20,51 +20,44 @@ export default function AmbientSoundPlayer() {
   const [isMuted, setIsMuted] = useState(false);
   const player = useRef<Tone.Player | null>(null);
 
-  // Cleanup effect to stop and dispose of the player on unmount
+  // Initialize the player on component mount
   useEffect(() => {
+    player.current = new Tone.Player({
+        loop: true,
+        mute: isMuted,
+    }).toDestination();
+
+    // Cleanup on unmount
     return () => {
-        player.current?.stop();
         player.current?.dispose();
     }
-  }, []);
-  
-  const toggleSound = async (sound: Sound) => {
-    await Tone.start(); 
+  }, [isMuted]); // Re-create player if mute state changes, just in case.
 
-    // If the same sound is clicked again, stop it.
+  const toggleSound = async (sound: Sound) => {
+    await Tone.start();
+    const soundPlayer = player.current;
+    
+    if (!soundPlayer) return;
+
+    // If the same sound is clicked, stop it.
     if (activeSound === sound) {
-      player.current?.stop();
-      player.current?.dispose();
-      player.current = null;
+      soundPlayer.stop();
       setActiveSound(null);
       return;
     }
 
-    // If a different sound is playing, stop and dispose of it first.
-    if(player.current) {
-        player.current.stop();
-        player.current.dispose();
-    }
-    
+    // Load and play the new sound
     const selectedSound = soundOptions.find(s => s.id === sound);
     if (selectedSound) {
-      // Create a new player, load the sound, and start it.
-      player.current = new Tone.Player({
-        url: selectedSound.url,
-        loop: true,
-        autostart: true, // Autostart after loading
-        mute: isMuted,
-      }).toDestination();
-      
-      // Handle potential loading errors
-      player.current.onstop = () => {
-        player.current?.dispose();
-      }
-      
-      setActiveSound(sound);
+        if (soundPlayer.state === 'started') {
+            soundPlayer.stop();
+        }
+        await soundPlayer.load(selectedSound.url);
+        soundPlayer.start();
+        setActiveSound(sound);
     }
   };
-  
+
   const toggleMute = () => {
     const newMutedState = !isMuted;
     if(player.current) {
