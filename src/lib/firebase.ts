@@ -21,11 +21,7 @@ const db = getFirestore(app);
 export const signInWithGoogle = async () => {
   try {
     const googleProvider = new GoogleAuthProvider();
-    // Explicitly set the auth domain to try and resolve the unauthorized-domain issue.
-    googleProvider.setCustomParameters({
-        'auth_domain': firebaseConfig.authDomain
-    });
-    
+    console.log("Attempting sign-in with authDomain:", auth.config.authDomain);
     const result = await signInWithPopup(auth, googleProvider);
     if (!result) {
       return null;
