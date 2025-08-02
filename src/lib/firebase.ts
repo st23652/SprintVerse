@@ -16,9 +16,7 @@ import { createUserProfileIfNotExists } from './firestore';
 
 const firebaseConfig = {
     apiKey: "AIzaSyCWqkzo5_Xanzh-fNQ5gBzUtY6eNY0n2bA",
-    // authDomain is intentionally left out to allow Firebase to auto-detect it.
-    // This can help with 'auth/unauthorized-domain' errors during local development.
-    // The long-term fix is to add your domains (e.g., localhost) to the Firebase Console.
+    authDomain: "sprintverse.firebaseapp.com",
     projectId: "sprintverse",
     storageBucket: "sprintverse.firebasestorage.app",
     messagingSenderId: "985612924718",
