@@ -19,7 +19,7 @@ import { completeSprint as completeSprintInDb } from '@/lib/firestore';
 import { suggestBreak } from '@/ai/flows/suggest-break';
 import BreakSuggestionModal from '@/components/session/break-suggestion-modal';
 
-export default function SessionPage({ params }: { params: { sessionId: string } }) {
+export default function SessionPage({ params: { sessionId } }: { params: { sessionId: string } }) {
   const { user, loading: authLoading } = useRequireAuth();
   const { toast } = useToast();
 
@@ -31,9 +31,9 @@ export default function SessionPage({ params }: { params: { sessionId: string } 
   const [isBreakModalOpen, setIsBreakModalOpen] = useState(false);
 
   useEffect(() => {
-    if (!params.sessionId) return;
+    if (!sessionId) return;
     setLoading(true);
-    const sessionRef = doc(db, 'sessions', params.sessionId);
+    const sessionRef = doc(db, 'sessions', sessionId);
     const unsubscribe = onSnapshot(sessionRef, (docSnap) => {
       if (docSnap.exists()) {
         const data = docSnap.data();
@@ -46,7 +46,7 @@ export default function SessionPage({ params }: { params: { sessionId: string } 
       setLoading(false);
     });
     return () => unsubscribe();
-  }, [params.sessionId]);
+  }, [sessionId]);
 
   const copySessionLink = () => {
     navigator.clipboard.writeText(window.location.href);
@@ -63,7 +63,7 @@ export default function SessionPage({ params }: { params: { sessionId: string } 
     if (!user) return;
     
     // 1. Update DB
-    await completeSprintInDb(user.uid, params.sessionId, 10); // Award 10 points
+    await completeSprintInDb(user.uid, sessionId, 10); // Award 10 points
     
     // 2. Update local state
     setSessionStatus('finished');
