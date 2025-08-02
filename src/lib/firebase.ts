@@ -50,8 +50,21 @@ const handleAuthSuccess = async (user: any) => {
 }
 
 const handleAuthError = (error: any) => {
-    // We will not log the billing error as the feature is now removed from UI.
-    if (error.code !== 'auth/billing-not-enabled' && error.code !== 'auth/cancelled-popup-request' && error.code !== 'auth/popup-closed-by-user') {
+    if (error.code === 'auth/unauthorized-domain') {
+        console.error(`
+        FIREBASE AUTH ERROR: The domain of this web app is not authorized to use Firebase Authentication.
+        
+        To fix this, please go to the Firebase Console:
+        1. Select your project: 'sprintverse'.
+        2. Go to the 'Authentication' section.
+        3. Click on the 'Settings' tab.
+        4. Under 'Authorized domains', click 'Add domain'.
+        5. Add 'localhost' and click 'Add'.
+        
+        Your app is running from a domain that is not on this list.
+        The current authDomain is configured as: ${auth.config.authDomain}
+        `);
+    } else if (error.code !== 'auth/billing-not-enabled' && error.code !== 'auth/cancelled-popup-request' && error.code !== 'auth/popup-closed-by-user') {
         console.error("Authentication Error: ", error);
     }
     // Re-throw the error so the UI layer can handle it
