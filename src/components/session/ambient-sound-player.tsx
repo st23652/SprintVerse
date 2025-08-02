@@ -9,9 +9,9 @@ import { Trees, Coffee, CloudRain, Volume2, VolumeX } from 'lucide-react';
 type Sound = 'forest' | 'cafe' | 'rain';
 
 const soundOptions: { id: Sound; label: string; icon: React.ElementType, url: string }[] = [
-  { id: 'forest', label: 'Forest', icon: Trees, url: 'https://firebasestorage.googleapis.com/v0/b/sprintverse-app.appspot.com/o/sounds%2Fforest.mp3?alt=media&token=f6a1e5ab-7201-419a-9d90-1c44729c1584' },
-  { id: 'cafe', label: 'Cafe', icon: Coffee, url: 'https://firebasestorage.googleapis.com/v0/b/sprintverse-app.appspot.com/o/sounds%2Fcafe.mp3?alt=media&token=40428d0a-9d0a-4c28-98e3-05b1c5a965d1' },
-  { id: 'rain', label: 'Rain', icon: CloudRain, url: 'https://firebasestorage.googleapis.com/v0/b/sprintverse-app.appspot.com/o/sounds%2Frain.mp3?alt=media&token=5b068712-1f41-455a-ad4f-77b31c9a6208' },
+  { id: 'forest', label: 'Forest', icon: Trees, url: '/sounds/forest.mp3' },
+  { id: 'cafe', label: 'Cafe', icon: Coffee, url: '/sounds/cafe.mp3' },
+  { id: 'rain', label: 'Rain', icon: CloudRain, url: '/sounds/rain.mp3' },
 ];
 
 export default function AmbientSoundPlayer() {
