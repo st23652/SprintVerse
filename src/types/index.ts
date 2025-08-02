@@ -18,6 +18,7 @@ export interface Session {
   status: 'waiting' | 'in-progress' | 'completed';
   createdAt: Timestamp;
   participants: Participant[];
+  participantUids: string[];
 }
 
 export interface Participant {

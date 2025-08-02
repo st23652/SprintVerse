@@ -36,6 +36,7 @@ export const createSession = async (title: string, creator: User): Promise<strin
         progress: 0,
         status: 'waiting',
       }],
+      participantUids: [creator.uid], // Add this line
     };
     const sessionRef = await addDoc(collection(db, 'sessions'), sessionData);
     return sessionRef.id;
@@ -55,7 +56,7 @@ export const joinSession = async (sessionId: string, user: User): Promise<boolea
     }
 
     const sessionData = sessionSnap.data() as Session;
-    const participantUids = sessionData.participants.map(p => p.uid);
+    const participantUids = sessionData.participantUids || [];
 
     if (participantUids.includes(user.uid)) {
       return true;
@@ -70,7 +71,8 @@ export const joinSession = async (sessionId: string, user: User): Promise<boolea
     };
 
     await updateDoc(sessionRef, {
-      participants: arrayUnion(newParticipant)
+      participants: arrayUnion(newParticipant),
+      participantUids: arrayUnion(user.uid) // Add this line
     });
     
     return true;
@@ -99,9 +101,10 @@ export const onLeaderboardUpdate = (callback: (users: User[]) => void): Unsubscr
 export const getSessionHistory = async (userId: string): Promise<Session[]> => {
     try {
         const sessionsRef = collection(db, 'sessions');
+        // This query is simpler and does not require a composite index.
         const q = query(
             sessionsRef,
-            where('participants', 'array-contains-any', [{uid: userId}]),
+            where('participantUids', 'array-contains', userId),
             orderBy('createdAt', 'desc'),
             limit(20)
         );
