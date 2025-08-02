@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -32,7 +33,10 @@ export default function ParticipantsList({ participants, sessionStatus }: Partic
     } else if (sessionStatus === 'finished') {
         setTimeElapsed(SPRINT_DURATION);
     } else {
-      setTimeElapsed(0);
+      // For 'waiting' or 'paused', don't reset, just clear the interval
+      if (sessionStatus === 'waiting') {
+        setTimeElapsed(0);
+      }
     }
     return () => clearInterval(interval);
   }, [sessionStatus]);
@@ -41,7 +45,7 @@ export default function ParticipantsList({ participants, sessionStatus }: Partic
       if (sessionStatus === 'finished' || participant.status === 'completed') {
           return 100;
       }
-      if (sessionStatus !== 'running') {
+      if (sessionStatus === 'waiting') {
           return 0;
       }
       return (timeElapsed / SPRINT_DURATION) * 100;

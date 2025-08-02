@@ -1,41 +1,18 @@
+
 'use client';
 
-import { useState, useEffect } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '../ui/button';
 
-const SPRINT_DURATION = 25 * 60; // 25 minutes in seconds
-
 interface TimerProps {
+  timeLeft: number;
   status: 'waiting' | 'running' | 'paused' | 'finished';
   onComplete: () => void;
 }
 
-export default function Timer({ status, onComplete }: TimerProps) {
-  const [timeLeft, setTimeLeft] = useState(SPRINT_DURATION);
+const SPRINT_DURATION = 25 * 60; // 25 minutes in seconds
 
-  useEffect(() => {
-    if (status !== 'running' || timeLeft === 0) return;
-
-    const intervalId = setInterval(() => {
-      setTimeLeft((prevTime) => {
-        if (prevTime <= 1) {
-          clearInterval(intervalId);
-          return 0;
-        }
-        return prevTime - 1;
-      });
-    }, 1000);
-
-    return () => clearInterval(intervalId);
-  }, [status, timeLeft]);
-
-  useEffect(() => {
-    if (status === 'waiting') {
-      setTimeLeft(SPRINT_DURATION);
-    }
-  }, [status]);
-
+export default function Timer({ timeLeft, status, onComplete }: TimerProps) {
   const formatTime = (seconds: number) => {
     const minutes = Math.floor(seconds / 60);
     const secs = seconds % 60;

@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useEffect, useState } from 'react';
@@ -6,19 +7,22 @@ import { useRequireAuth } from '@/hooks/use-require-auth';
 import { doc, onSnapshot } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import type { Session, Participant } from '@/types';
+import { useTimer } from '@/hooks/use-timer';
 
 import Header from '@/components/layout/header';
 import Timer from '@/components/session/timer';
 import ParticipantsList from '@/components/session/participants-list';
-import { Card, CardContent } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Copy, Users } from 'lucide-react';
+import { Copy, Users, Youtube, Pause, Play, Square, AlertTriangle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import { completeSprint as completeSprintInDb } from '@/lib/firestore';
 import { suggestBreak } from '@/ai/flows/suggest-break';
 import BreakSuggestionModal from '@/components/session/break-suggestion-modal';
-import SpotifyPlayer from '@/components/session/spotify-player';
+import YoutubePlayer from '@/components/session/youtube-player';
+
+const SPRINT_DURATION = 25 * 60; // 25 minutes
 
 export default function SessionPage() {
   const params = useParams();
@@ -29,9 +33,40 @@ export default function SessionPage() {
   const [session, setSession] = useState<Session | null>(null);
   const [participants, setParticipants] = useState<Participant[]>([]);
   const [loading, setLoading] = useState(true);
-  const [sessionStatus, setSessionStatus] = useState<'waiting' | 'running' | 'paused' | 'finished'>('waiting');
   const [breakSuggestion, setBreakSuggestion] = useState<string | null>(null);
   const [isBreakModalOpen, setIsBreakModalOpen] = useState(false);
+  const [pauseCount, setPauseCount] = useState(0);
+
+  const handleCompleteSprint = async () => {
+    if (!user) return;
+    
+    // 1. Update DB
+    await completeSprintInDb(user.uid, sessionId, 10); // Award 10 points
+    
+    // 2. Update local state
+    setStatus('finished');
+    
+    // 3. Get AI suggestion
+    try {
+      const suggestionResult = await suggestBreak({
+        sprintCount: 1, // This would be tracked in session state
+        streak: user.streak + 1,
+        totalSprints: user.totalSprints + 1
+      });
+      setBreakSuggestion(suggestionResult.suggestion);
+    } catch(e) {
+      console.error(e);
+      setBreakSuggestion("Time for a well-deserved break! Maybe stretch a little?");
+    }
+    
+    // 4. Show modal
+    setIsBreakModalOpen(true);
+  }
+  
+  const { timeLeft, status, setStatus, resetTimer } = useTimer({
+    initialTime: SPRINT_DURATION,
+    onComplete: handleCompleteSprint,
+  });
 
   useEffect(() => {
     if (!sessionId) return;
@@ -57,35 +92,17 @@ export default function SessionPage() {
   };
   
   const handleStartSession = () => {
-    // In a real app, you'd update the session status in Firestore
-    setSessionStatus('running');
+    setStatus('running');
     toast({ title: 'Sprint Started!', description: 'Time to focus!' });
   }
 
-  const handleCompleteSprint = async () => {
-    if (!user) return;
-    
-    // 1. Update DB
-    await completeSprintInDb(user.uid, sessionId, 10); // Award 10 points
-    
-    // 2. Update local state
-    setSessionStatus('finished');
-    
-    // 3. Get AI suggestion
-    try {
-      const suggestionResult = await suggestBreak({
-        sprintCount: 1, // This would be tracked in session state
-        streak: user.streak + 1,
-        totalSprints: user.totalSprints + 1
-      });
-      setBreakSuggestion(suggestionResult.suggestion);
-    } catch(e) {
-      console.error(e);
-      setBreakSuggestion("Time for a well-deserved break! Maybe stretch a little?");
-    }
-    
-    // 4. Show modal
-    setIsBreakModalOpen(true);
+  const handlePause = () => {
+    setStatus('paused');
+    setPauseCount(prev => prev + 1);
+  }
+
+  const handleResume = () => {
+    setStatus('running');
   }
 
   if (loading || authLoading) {
@@ -131,13 +148,34 @@ export default function SessionPage() {
             </Card>
 
             <Timer
-              status={sessionStatus}
+              timeLeft={timeLeft}
+              status={status}
               onComplete={handleCompleteSprint}
             />
             
-            {sessionStatus === 'waiting' && (
-                <Button size="lg" className="w-full bg-accent hover:bg-accent/90" onClick={handleStartSession}>Start Sprint</Button>
-            )}
+            <Card className="shadow-lg">
+              <CardContent className="p-4 flex items-center justify-between">
+                <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                    <AlertTriangle className="h-4 w-4 text-orange-400" />
+                    Pauses: <span className="font-bold text-foreground">{pauseCount}</span>
+                </div>
+
+                <div className="flex items-center gap-2">
+                  {status === 'waiting' && (
+                      <Button size="lg" className="bg-accent hover:bg-accent/90" onClick={handleStartSession}>Start Sprint</Button>
+                  )}
+                  {status === 'running' && (
+                    <>
+                      <Button variant="outline" onClick={handlePause}><Pause className="mr-2" /> Pause</Button>
+                      <Button variant="destructive" onClick={handleCompleteSprint}><Square className="mr-2" /> End Sprint Early</Button>
+                    </>
+                  )}
+                  {status === 'paused' && (
+                     <Button onClick={handleResume}><Play className="mr-2" /> Resume</Button>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
 
           </div>
 
@@ -147,10 +185,10 @@ export default function SessionPage() {
                     <h2 className="font-headline text-2xl font-bold mb-4 flex items-center gap-2">
                         <Users /> Participants ({participants.length})
                     </h2>
-                    <ParticipantsList participants={participants} sessionStatus={sessionStatus} />
+                    <ParticipantsList participants={participants} sessionStatus={status} />
                 </CardContent>
             </Card>
-            <SpotifyPlayer />
+            <YoutubePlayer />
           </div>
         </div>
       </main>
