@@ -44,25 +44,34 @@ export const createSession = async (title: string, creator: User): Promise<strin
   }
 };
 
-export const joinSession = async (sessionId: string, user: User) => {
-    try {
-        const sessionRef = doc(db, 'sessions', sessionId);
-        const newParticipant = {
-            uid: user.uid,
-            displayName: user.displayName,
-            photoURL: user.photoURL,
-            progress: 0,
-            status: 'waiting',
-        };
-        await updateDoc(sessionRef, {
-            participants: arrayUnion(newParticipant)
-        });
-        return true;
-    } catch (error) {
-        console.error("Error joining session: ", error);
-        return false;
+export const joinSession = async (sessionId: string, user: User): Promise<boolean> => {
+  const sessionRef = doc(db, 'sessions', sessionId);
+  try {
+    const sessionSnap = await getDoc(sessionRef);
+    if (!sessionSnap.exists()) {
+      console.error("Session not found!");
+      return false;
     }
+
+    const newParticipant = {
+      uid: user.uid,
+      displayName: user.displayName,
+      photoURL: user.photoURL,
+      progress: 0,
+      status: 'waiting',
+    };
+
+    await updateDoc(sessionRef, {
+      participants: arrayUnion(newParticipant)
+    });
+    
+    return true;
+  } catch (error) {
+    console.error("Error joining session: ", error);
+    return false;
+  }
 };
+
 
 export const onLeaderboardUpdate = (callback: (users: User[]) => void): Unsubscribe => {
     const usersRef = collection(db, 'users');
