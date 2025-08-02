@@ -10,7 +10,6 @@ import type { Session, Participant } from '@/types';
 import Header from '@/components/layout/header';
 import Timer from '@/components/session/timer';
 import ParticipantsList from '@/components/session/participants-list';
-import AmbientSoundPlayer from '@/components/session/ambient-sound-player';
 import { Card, CardContent } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Copy, Users } from 'lucide-react';
@@ -150,7 +149,6 @@ export default function SessionPage() {
                     <ParticipantsList participants={participants} sessionStatus={sessionStatus} />
                 </CardContent>
             </Card>
-            <AmbientSoundPlayer />
           </div>
         </div>
       </main>
