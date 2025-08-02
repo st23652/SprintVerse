@@ -20,13 +20,7 @@ const db = getFirestore(app);
 export const signInWithGoogle = async () => {
   try {
     const googleProvider = new GoogleAuthProvider();
-    googleProvider.setCustomParameters({
-      'auth_domain': firebaseConfig.authDomain
-    });
     
-    // Explicitly setting tenantId to null can sometimes resolve domain issues
-    auth.tenantId = null;
-
     const result = await signInWithPopup(auth, googleProvider);
     if (!result) {
       return null;
