@@ -1,4 +1,4 @@
-import { doc, setDoc, getDoc, serverTimestamp, collection, addDoc, getDocs, query, orderBy, limit, updateDoc, arrayUnion, increment } from 'firebase/firestore';
+import { doc, setDoc, getDoc, serverTimestamp, collection, addDoc, getDocs, query, orderBy, limit, updateDoc, arrayUnion, increment, onSnapshot, Unsubscribe } from 'firebase/firestore';
 import { db } from './firebase';
 import type { User as FirebaseUser } from 'firebase/auth';
 import type { Session, User } from '@/types';
@@ -63,6 +63,22 @@ export const joinSession = async (sessionId: string, user: User) => {
         return false;
     }
 };
+
+export const onLeaderboardUpdate = (callback: (users: User[]) => void): Unsubscribe => {
+    const usersRef = collection(db, 'users');
+    const q = query(usersRef, orderBy('points', 'desc'), limit(10));
+    
+    const unsubscribe = onSnapshot(q, (querySnapshot) => {
+        const users = querySnapshot.docs.map(doc => doc.data() as User);
+        callback(users);
+    }, (error) => {
+        console.error("Error listening to leaderboard updates: ", error);
+        // In case of error, we can pass an empty array or handle it as needed.
+        callback([]);
+    });
+
+    return unsubscribe;
+}
 
 
 export const getLeaderboard = async (): Promise<User[]> => {
