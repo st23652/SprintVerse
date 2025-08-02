@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { useParams } from 'next/navigation';
 import { useRequireAuth } from '@/hooks/use-require-auth';
 import { doc, onSnapshot } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
@@ -19,7 +20,9 @@ import { completeSprint as completeSprintInDb } from '@/lib/firestore';
 import { suggestBreak } from '@/ai/flows/suggest-break';
 import BreakSuggestionModal from '@/components/session/break-suggestion-modal';
 
-export default function SessionPage({ params: { sessionId } }: { params: { sessionId: string } }) {
+export default function SessionPage() {
+  const params = useParams();
+  const sessionId = params.sessionId as string;
   const { user, loading: authLoading } = useRequireAuth();
   const { toast } = useToast();
 
