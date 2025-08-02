@@ -18,6 +18,7 @@ import { useToast } from '@/hooks/use-toast';
 import { completeSprint as completeSprintInDb } from '@/lib/firestore';
 import { suggestBreak } from '@/ai/flows/suggest-break';
 import BreakSuggestionModal from '@/components/session/break-suggestion-modal';
+import SpotifyPlayer from '@/components/session/spotify-player';
 
 export default function SessionPage() {
   const params = useParams();
@@ -149,6 +150,7 @@ export default function SessionPage() {
                     <ParticipantsList participants={participants} sessionStatus={sessionStatus} />
                 </CardContent>
             </Card>
+            <SpotifyPlayer />
           </div>
         </div>
       </main>
