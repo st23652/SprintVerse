@@ -9,12 +9,8 @@ import {
     createUserWithEmailAndPassword,
     signInWithEmailAndPassword,
     updateProfile,
-    RecaptchaVerifier,
-    signInWithPhoneNumber,
-    PhoneAuthProvider,
-    signInWithCredential
 } from 'firebase/auth';
-import { getFirestore } from 'firebase/firestore';
+import { getFirestore, enableIndexedDbPersistence } from 'firebase/firestore';
 import { createUserProfileIfNotExists } from './firestore';
 
 const firebaseConfig = {
@@ -31,6 +27,21 @@ const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
 const auth = getAuth(app);
 const db = getFirestore(app);
 
+// Enable offline persistence
+enableIndexedDbPersistence(db)
+  .catch((err) => {
+    if (err.code == 'failed-precondition') {
+      // Multiple tabs open, persistence can only be enabled in one.
+      // The other tabs will still work normally.
+      console.warn('Firestore persistence failed: multiple tabs open.');
+    } else if (err.code == 'unimplemented') {
+      // The current browser does not support all of the
+      // features required to enable persistence
+      console.warn('Firestore persistence is not available in this browser.');
+    }
+  });
+
+
 const handleAuthSuccess = async (user: any) => {
     if (user) {
         await createUserProfileIfNotExists(user);
@@ -39,7 +50,8 @@ const handleAuthSuccess = async (user: any) => {
 }
 
 const handleAuthError = (error: any) => {
-    if (error.code !== 'auth/cancelled-popup-request' && error.code !== 'auth/popup-closed-by-user') {
+    // We will not log the billing error as the feature is now removed from UI.
+    if (error.code !== 'auth/billing-not-enabled' && error.code !== 'auth/cancelled-popup-request' && error.code !== 'auth/popup-closed-by-user') {
         console.error("Authentication Error: ", error);
     }
     // Re-throw the error so the UI layer can handle it
@@ -86,46 +98,6 @@ export const signInWithEmail = async (email: string, password: string) => {
         return handleAuthError(error);
     }
 }
-
-const getRecaptchaVerifier = () => {
-    if ((window as any).recaptchaVerifier) {
-        return (window as any).recaptchaVerifier;
-    }
-    const recaptchaVerifier = new RecaptchaVerifier(auth, 'recaptcha-container', {
-        'size': 'invisible',
-        'callback': () => {
-          // reCAPTCHA solved, allow signInWithPhoneNumber.
-        }
-    });
-    (window as any).recaptchaVerifier = recaptchaVerifier;
-    return recaptchaVerifier;
-}
-
-
-export const sendPhoneVerification = async (phoneNumber: string) => {
-    const appVerifier = getRecaptchaVerifier();
-    try {
-        const verificationId = await signInWithPhoneNumber(auth, phoneNumber, appVerifier);
-        return verificationId;
-    } catch(error) {
-        // We will not log the billing error as the feature is now removed from UI.
-        if (error.code !== 'auth/billing-not-enabled') {
-            return handleAuthError(error);
-        }
-        return null;
-    }
-}
-
-export const verifyPhoneCode = async (verificationId: string, code: string) => {
-    const credential = PhoneAuthProvider.credential(verificationId, code);
-    try {
-        const result = await signInWithCredential(auth, credential);
-        return await handleAuthSuccess(result.user);
-    } catch(error) {
-        return handleAuthError(error);
-    }
-}
-
 
 export const signOutUser = async () => {
   try {
