@@ -16,6 +16,7 @@ import { createUserProfileIfNotExists } from './firestore';
 
 const firebaseConfig = {
     apiKey: "AIzaSyCWqkzo5_Xanzh-fNQ5gBzUtY6eNY0n2bA",
+    authDomain: "sprintverse.firebaseapp.com",
     projectId: "sprintverse",
     storageBucket: "sprintverse.firebasestorage.app",
     messagingSenderId: "985612924718",
@@ -30,8 +31,6 @@ let db: Firestore;
 if (getApps().length === 0) {
     app = initializeApp(firebaseConfig);
     auth = getAuth(app);
-    // This setting can help resolve domain authorization issues during local development.
-    auth.tenantId = null; 
     db = initializeFirestore(app, {
         localCache: memoryLocalCache()
     });
