@@ -63,14 +63,16 @@ const handleAuthError = (error: any) => {
         Your app is running from a domain that is not on this list.
         The current authDomain is configured as: sprintverse.firebaseapp.com
         `);
-    } else if (error.code !== 'auth/billing-not-enabled' && error.code !== 'auth/cancelled-popup-request' && error.code !== 'auth/popup-closed-by-user') {
-        console.error("Authentication Error: ", error);
+        // Do not re-throw the error, just return null to prevent a crash.
+        return null;
     }
-
-    // Don't re-throw for common "user closed popup" or domain authorization errors
-    if (error.code !== 'auth/cancelled-popup-request' && error.code !== 'auth/popup-closed-by-user' && error.code !== 'auth/unauthorized-domain') {
+    
+    // Don't throw for common "user closed popup" errors.
+    if (error.code !== 'auth/cancelled-popup-request' && error.code !== 'auth/popup-closed-by-user') {
+        console.error("Authentication Error: ", error);
         throw error;
     }
+    
     return null;
 }
 
