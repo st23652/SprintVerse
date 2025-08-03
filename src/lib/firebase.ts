@@ -54,7 +54,7 @@ const handleAuthError = (error: any) => {
         FIREBASE AUTH ERROR: The domain of this web app is not authorized to use Firebase Authentication.
         
         To fix this, please go to the Firebase Console:
-        1. Select your project: 'sprintverse'.
+        1. Select your project: 'SprintVerse'.
         2. Go to the 'Authentication' section.
         3. Click on the 'Settings' tab.
         4. Under 'Authorized domains', click 'Add domain'.
