@@ -2,8 +2,6 @@
 import { initializeApp, getApps, getApp, FirebaseApp } from 'firebase/app';
 import { 
     getAuth, 
-    GoogleAuthProvider, 
-    GithubAuthProvider,
     signInWithPopup, 
     signOut,
     createUserWithEmailAndPassword,
@@ -75,26 +73,6 @@ const handleAuthError = (error: any) => {
     
     return null;
 }
-
-export const signInWithGoogle = async () => {
-  try {
-    const googleProvider = new GoogleAuthProvider();
-    const result = await signInWithPopup(auth, googleProvider);
-    return await handleAuthSuccess(result.user);
-  } catch (error) {
-    return handleAuthError(error);
-  }
-};
-
-export const signInWithGitHub = async () => {
-  try {
-    const githubProvider = new GithubAuthProvider();
-    const result = await signInWithPopup(auth, githubProvider);
-    return await handleAuthSuccess(result.user);
-  } catch (error) {
-    return handleAuthError(error);
-  }
-};
 
 export const registerWithEmail = async (email: string, password: string, displayName: string) => {
     try {
